@@ -1,0 +1,599 @@
+// Prisma schema for Safety Codes Inspection System
+// Milestone 1: Foundation - Base models
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// NOTE: Prisma 7 Forward-Compatibility Warning
+// The `url` property in the datasource block is deprecated in Prisma 7.
+// However, this is the CORRECT configuration for Prisma 5.x (current version: 5.22.0).
+// 
+// When upgrading to Prisma 7:
+// - Remove the `url` property from this datasource block
+// - Create a `prisma.config.ts` file to configure the connection URL
+// - Update the PrismaClient initialization to pass `datasourceUrl`
+//
+// For migration details, see: packages/db/PRISMA_MIGRATION_NOTES.md
+// References: https://pris.ly/d/config-datasource and https://pris.ly/d/prisma7-client-config
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// Milestone 1: Base User Model
+// ============================================================================
+
+enum UserRole {
+  SCO
+  ADMIN
+  OWNER
+}
+
+model User {
+  id    String   @id @default(cuid())
+  email String   @unique
+  name  String
+  role  UserRole @default(SCO)
+
+  // M2: Authentication fields
+  passwordHash   String?
+  certifications Json? // Array of certification objects
+  disciplines    String[] // e.g., ["Building", "Plumbing"] — SCO / admin registry (M9-S4)
+  designationId  String? // SCO designation number
+  lastLoginAt    DateTime?
+
+  // M9-S4: Admin registry & certification management (DB)
+  certificationExpiry DateTime? // Aggregate / primary certification expiry for admin views
+  authorities         String[]  @default([]) // Issuing authorities (e.g. AB Safety Codes)
+  isActive            Boolean   @default(true)
+  deactivatedAt       DateTime?
+
+  // M11-S4: Remote wipe for lost/stolen inspector devices
+  remoteWipeRequestedAt DateTime?
+  remoteWipeConfirmedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  sessions             Session[]
+  pushSubscriptions    DevicePushSubscription[]
+  createdDeficiencies  Deficiency[]               @relation("CreatedBy")
+  inspectionSchedules  InspectionSchedule[]
+  finalizedInspections PermitInspection[]         @relation("FinalizedBy")
+  reviewedVoCs         VerificationOfCompliance[] @relation("VoCReviewedBy")
+  createdAddendums     Addendum[]                 @relation("AddendumCreatedBy")
+  stopWorkLockOverrides StopWorkEscalation[]      @relation("StopWorkLockOverrideBy")
+
+  @@index([email])
+  @@index([role, isActive])
+  @@map("users")
+}
+
+// ============================================================================
+// Milestone 2: Authentication & User Context
+// ============================================================================
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  token        String
+  refreshToken String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([refreshToken])
+  @@map("sessions")
+}
+
+/// Web Push subscription for inspector devices (NFR-M-04 re-engageable PWA).
+model DevicePushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  deviceId  String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, deviceId])
+  @@index([userId])
+  @@map("device_push_subscriptions")
+}
+
+// ============================================================================
+// Milestone 3: Offline Data Layer
+// ============================================================================
+
+enum InspectionStatus {
+  SCHEDULED
+  IN_PROGRESS
+  PASSED
+  FAILED
+  CANCELLED
+}
+
+/// M10-S4: Generated report artifacts (R2 key + integrity hash + distribution tracking)
+enum ReportType {
+  INSPECTION
+  DEFICIENCY
+  NO_ENTRY
+  STOP_WORK
+}
+
+/// LSC-A-02 — Legacy inspection stage multi-select values
+enum InspectionStage {
+  FOUNDATION
+  FRAMING
+  ROUGH_IN
+  INSULATION
+  FINAL
+  OTHER
+}
+
+model PermitInspection {
+  id                    String           @id @default(cuid())
+  /// M8-S7: Legal integrity unique immutable ID (UUID preferred) – set by service if missing
+  uniqueId              String?          @unique
+  permitId              String? // Link to Permit (M4-S1)
+  esiteId               String?          @unique
+  status                InspectionStatus @default(SCHEDULED)
+  scheduledDate         DateTime
+  completedDate         DateTime?
+  /// M8-S7: Finalized timestamp (set when legally finalized/submitted)
+  finalizedAt           DateTime?
+  notes                 String?          @db.Text
+  lastSyncedAt          DateTime         @default(now())
+  etag                  String?
+  /// M8-S7: Inspector who legally finalized (immutable once set)
+  inspectorId           String?
+  /// M8-S7: Certification snapshot captured at finalization
+  certificationSnapshot Json?
+  /// M8-S7: GPS captured at inspection start
+  startGps              Json?
+  /// M8-S7: GPS captured at inspection finalization
+  finalizeGps           Json?
+  /// M8-S7: SHA-256 hash (hex) of inspection legal payload
+  documentHash          String?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  permit              Permit?              @relation(fields: [permitId], references: [id])
+  inspector           User?                @relation(fields: [inspectorId], references: [id], name: "FinalizedBy")
+  deficiencies        Deficiency[]
+  photos              Photo[]
+  documents           InspectionDocument[]
+  schedule            InspectionSchedule?
+  checklistExecutions ChecklistExecution[]
+  reports             Report[]
+  addendums           Addendum[]
+  workflow            InspectionWorkflow?
+
+  @@index([permitId])
+  @@index([esiteId])
+  @@index([status])
+  @@index([lastSyncedAt])
+  @@index([inspectorId])
+  @@index([scheduledDate])
+  @@index([status, scheduledDate])
+  @@index([inspectorId, status])
+  @@map("permit_inspections")
+}
+
+/// LSC-A-01–03 — Legacy inspection dates, stages, and unable-to-enter workflow (admin + sync).
+model InspectionWorkflow {
+  id                           String            @id @default(cuid())
+  inspectionId                 String            @unique
+  requestedDate                DateTime?
+  plannedDate                  DateTime?
+  actualDate                   DateTime?
+  stages                       InspectionStage[] @default([])
+  otherStageDescription        String?
+  noFurtherInspectionsRequired Boolean           @default(false)
+  firstNotificationDate        DateTime?
+  secondNotificationDate       DateTime?
+  unableToEnterComments        String?           @db.Text
+  geofenceProof                Json?
+  reInspectionFeeFlagged       Boolean           @default(false)
+  reInspectionFeeFlaggedAt     DateTime?
+  ownerNotificationSentAt      DateTime?
+  ownerNotificationEmail       String?
+  lastSyncedAt                 DateTime?
+  createdAt                    DateTime          @default(now())
+  updatedAt                    DateTime          @updatedAt
+
+  inspection PermitInspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+
+  @@index([reInspectionFeeFlagged])
+  @@map("inspection_workflows")
+}
+
+model Report {
+  id              String     @id @default(cuid())
+  inspectionId    String
+  type            ReportType
+  filename        String
+  storageKey      String
+  hash            String
+  generatedAt     DateTime   @default(now())
+  distributedAt   DateTime?
+  signedAt        DateTime?
+  signatureImage  String?    @db.Text
+  signedByUserId  String?
+
+  inspection PermitInspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+
+  @@index([inspectionId])
+  @@index([storageKey])
+  @@index([hash])
+  @@index([inspectionId, type, distributedAt])
+  @@map("reports")
+}
+
+/// M10-S7: Inspection addendum — amendment linked to original inspection (append-only legal record).
+model Addendum {
+  id           String   @id @default(cuid())
+  inspectionId String
+  reason       String
+  content      String   @db.Text
+  createdById  String
+  createdAt    DateTime @default(now())
+  /// Base64-encoded signature image (optional at create time)
+  signature    String?  @db.Text
+
+  inspection PermitInspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  createdBy  User             @relation("AddendumCreatedBy", fields: [createdById], references: [id])
+
+  @@index([inspectionId])
+  @@index([createdById])
+  @@index([createdAt])
+  @@map("addendums")
+}
+
+model InspectionSchedule {
+  id           String   @id @default(cuid())
+  inspectionId String   @unique
+  assignedToId String
+  assignedDate DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  inspection PermitInspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  assignedTo User             @relation(fields: [assignedToId], references: [id])
+
+  @@index([assignedToId])
+  @@index([assignedDate])
+  @@index([assignedToId, assignedDate])
+  @@map("inspection_schedules")
+}
+
+enum DeficiencySeverity {
+  MINOR
+  MAJOR
+  CRITICAL
+}
+
+enum DeficiencyStatus {
+  OPEN
+  VOC_SUBMITTED
+  VOC_ACCEPTED
+  VOC_REJECTED
+  CLOSED
+}
+
+/// M10-S5: Verification of Compliance submission / review workflow (one row per deficiency).
+enum VoCMethod {
+  WRITTEN_ASSURANCE
+  SITE_VISIT
+  VERBAL_ASSURANCE
+  OTHER
+}
+
+enum VoCStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+// M6-S1: Deficiency schema — checklist link, due date, Stop Work / unsafe flags, VOC fields
+model Deficiency {
+  id              String             @id @default(cuid())
+  clientId        String             @unique
+  esiteId         String?            @unique
+  inspectionId    String
+  checklistItemId String?
+  createdById     String
+  description     String             @db.Text
+  location        String?
+  severity        DeficiencySeverity
+  status          DeficiencyStatus   @default(OPEN)
+  dueDate         DateTime?
+  codeReference   Json?
+  isStopWork      Boolean            @default(false)
+  isUnsafe        Boolean            @default(false)
+  vocSubmittedAt  DateTime?
+  vocAcceptedAt   DateTime?
+  vocRejectedAt   DateTime?
+  vocNotes        String?            @db.Text
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  syncedAt        DateTime?
+  etag            String?
+
+  inspection               PermitInspection          @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  createdBy                User                      @relation("CreatedBy", fields: [createdById], references: [id])
+  photos                   Photo[]
+  verificationOfCompliance VerificationOfCompliance?
+  stopWorkEscalation       StopWorkEscalation?
+
+  @@index([clientId])
+  @@index([esiteId])
+  @@index([inspectionId])
+  @@index([checklistItemId])
+  @@index([status])
+  @@index([isStopWork])
+  @@index([syncedAt])
+  @@index([inspectionId, syncedAt])
+  @@index([createdById])
+  @@map("deficiencies")
+}
+
+/// A-05 — Stop Work order escalation: service date, appeal window, lock-out, delivery audit.
+model StopWorkEscalation {
+  id                    String    @id @default(cuid())
+  deficiencyId          String    @unique
+  servedAt              DateTime
+  appealDeadline        DateTime
+  lockedOut             Boolean   @default(true)
+  lockOutOverriddenAt   DateTime?
+  lockOutOverriddenById String?
+  lockOutOverrideReason String?   @db.Text
+  emailDeliveries       Json      @default("[]")
+  smsDeliveredAt        DateTime?
+  smsDeliveryLog        String?   @db.Text
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  deficiency          Deficiency @relation(fields: [deficiencyId], references: [id], onDelete: Cascade)
+  lockOutOverriddenBy User?      @relation("StopWorkLockOverrideBy", fields: [lockOutOverriddenById], references: [id])
+
+  @@index([appealDeadline])
+  @@index([lockedOut])
+  @@map("stop_work_escalations")
+}
+
+model VerificationOfCompliance {
+  id               String    @id @default(cuid())
+  deficiencyId     String    @unique
+  verificationDate DateTime
+  sectionTitle     String
+  title            String
+  name             String
+  method           VoCMethod
+  comments         String?   @db.Text
+  submittedAt      DateTime?
+  reviewedAt       DateTime?
+  reviewedById     String?
+  status           VoCStatus @default(PENDING)
+
+  deficiency Deficiency @relation(fields: [deficiencyId], references: [id], onDelete: Cascade)
+  reviewedBy User?      @relation("VoCReviewedBy", fields: [reviewedById], references: [id])
+
+  @@index([status])
+  @@index([reviewedById])
+  @@index([status, submittedAt])
+  @@map("verification_of_compliance")
+}
+
+// ============================================================================
+// Milestone 7: Evidence & Documentation (M7-S1) — Photo metadata & R2 storage reference
+// ============================================================================
+
+model Photo {
+  id           String    @id @default(cuid())
+  clientId     String    @unique
+  deficiencyId String?
+  inspectionId String
+  filename     String
+  mimeType     String
+  size         Int
+  storageKey   String?
+  metadata     Json
+  annotations  Json?
+  createdAt    DateTime  @default(now())
+  syncedAt     DateTime?
+
+  inspection PermitInspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  deficiency Deficiency?      @relation(fields: [deficiencyId], references: [id], onDelete: SetNull)
+
+  @@index([clientId])
+  @@index([inspectionId])
+  @@index([deficiencyId])
+  @@index([storageKey])
+  @@index([syncedAt])
+  @@map("photos")
+}
+
+// M7-S8: General inspection documents (PDFs, notices, etc.) — R2 documents bucket + DB metadata
+model InspectionDocument {
+  id           String   @id @default(cuid())
+  inspectionId String
+  filename     String
+  mimeType     String
+  size         Int
+  storageKey   String
+  metadata     Json     @default("{}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  inspection PermitInspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+
+  @@index([inspectionId])
+  @@index([storageKey])
+  @@map("inspection_documents")
+}
+
+// ============================================================================
+// Milestone 3: Conflict Detection and Logging (M3-S8)
+// ============================================================================
+
+model SyncConflict {
+  id            String   @id @default(cuid())
+  entityType    String // e.g., "inspection", "deficiency", "permit"
+  entityId      String // ID of the conflicting entity
+  clientVersion Json // Client's version of the data
+  serverVersion Json // Server's version of the data
+  resolution    String // "FIELD_WINS", "SERVER_WINS", "MANUAL_REQUIRED"
+  resolvedAt    DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  @@index([entityType])
+  @@index([entityId])
+  @@index([resolution])
+  @@index([resolvedAt])
+  @@map("sync_conflicts")
+}
+
+// ============================================================================
+// Milestone 4: Permit & Site Retrieval (M4-S1)
+// ============================================================================
+
+enum PermitStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  EXPIRED
+}
+
+model Permit {
+  id            String       @id @default(cuid())
+  permitNumber  String       @unique
+  address       String
+  legalLandDesc String? // Legal land description (optional, varies by jurisdiction)
+  scope         String // Permit scope (e.g., "New Construction", "Renovation")
+  status        PermitStatus @default(ACTIVE)
+  latitude      Float? // GPS coordinates for location-based discovery
+  longitude     Float?
+  /// LSC-A-03 — Set when unable-to-enter workflow syncs from the field
+  reInspectionFeeFlagged Boolean @default(false)
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  inspections PermitInspection[]
+
+  @@index([permitNumber])
+  @@index([reInspectionFeeFlagged])
+  @@index([status])
+  @@index([latitude, longitude]) // Composite index for GPS-based queries
+  @@index([address]) // For text-based search
+  @@map("permits")
+}
+
+/// Authoritative municipal permitting system catalog (A-02). Separate from the agency's
+/// local permit cache; sync imports deltas from this feed into `permits`.
+model MunicipalPermitFeedEntry {
+  id            String       @id @default(cuid())
+  permitNumber  String       @unique
+  address       String
+  legalLandDesc String?
+  scope         String
+  status        PermitStatus @default(ACTIVE)
+  latitude      Float?
+  longitude     Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([permitNumber])
+  @@map("municipal_permit_feed")
+}
+
+// ============================================================================
+// Milestone 5: Inspection Execution (M5-S1) — Checklist schema
+// ============================================================================
+
+model ChecklistTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  discipline  String
+  version     Int      @default(1)
+  versionHash String   @unique
+  items       Json
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  executions ChecklistExecution[]
+
+  @@index([discipline])
+  @@index([isActive])
+  @@index([discipline, isActive])
+  @@map("checklist_templates")
+}
+
+model ChecklistExecution {
+  id           String    @id @default(cuid())
+  inspectionId String
+  templateId   String
+  versionHash  String
+  responses    Json
+  progress     Float     @default(0)
+  completedAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  inspection PermitInspection  @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  template   ChecklistTemplate @relation(fields: [templateId], references: [id], onDelete: Restrict)
+
+  @@index([inspectionId])
+  @@index([templateId])
+  @@index([versionHash])
+  @@index([inspectionId, templateId])
+  @@map("checklist_executions")
+}
+
+model CodeLibrary {
+  id          String  @id @default(cuid())
+  code        String
+  section     String
+  title       String
+  description String?
+
+  @@unique([code, section])
+  @@index([section])
+  @@map("code_library")
+}
+
+// ============================================================================
+// Milestone 8 (M8-S8): Append-only audit log for inspection-related changes
+// ============================================================================
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  entityType String
+  entityId   String
+  action     String
+  userId     String
+  timestamp  DateTime @default(now())
+  beforeData Json?
+  afterData  Json?
+  metadata   Json?
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([timestamp])
+  @@map("audit_logs")
+}

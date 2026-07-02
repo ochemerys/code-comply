@@ -1,0 +1,39 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "types": ["node", "@cucumber/cucumber", "@playwright/test"],
+    "lib": ["ES2020", "DOM", "DOM.Iterable"]
+  },
+  "ts-node": {
+    "transpileOnly": true,
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  },
+  "include": [
+    "features/**/*.ts",
+    "step-definitions/**/*.ts",
+    "support/**/*.ts",
+    "scripts/**/*.ts",
+    "../../apps/api/src/**/*.ts",
+    "../../apps/inspector/src/lib/accessibility/**/*.ts",
+    "../../packages/utils/src/ci/**/*.ts",
+    "../../packages/utils/src/monitoring/**/*.ts",
+    "../../packages/utils/src/backup/**/*.ts",
+    "../../packages/utils/src/api-docs/**/*.ts",
+    "../../packages/utils/src/user-guides/**/*.ts",
+    "../../packages/utils/src/operations-runbook/**/*.ts"
+  ],
+  "exclude": [
+    "../../apps/api/src/**/*.spec.ts",
+    "../../apps/api/src/**/*.test.ts",
+    "../../apps/inspector/src/**/*.spec.ts",
+    "../../apps/inspector/src/**/*.test.ts",
+    "../../packages/utils/src/**/*.spec.ts"
+  ]
+}

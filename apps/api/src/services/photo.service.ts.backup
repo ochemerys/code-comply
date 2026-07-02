@@ -1,0 +1,185 @@
+import { randomUUID } from 'node:crypto'
+import { prisma } from '@codecomply/db'
+import type { Photo as PhotoRow, Prisma } from '@prisma/client'
+import {
+  createObjectStorageClientFromEnv,
+  type ObjectStorageClient,
+} from '../lib/storage/storage-client.js'
+import { inspectionService } from './inspection.service.js'
+
+/** Multipart uploads max body size (aligned with documents route). */
+export const MAX_PHOTO_UPLOAD_BYTES = 10 * 1024 * 1024
+
+export type Photo = {
+  id: string
+  clientId: string
+  inspectionId: string
+  deficiencyId: string | null
+  filename: string
+  mimeType: string
+  size: number
+  storageKey: string | null
+  metadata: Record<string, unknown>
+  annotations: Prisma.JsonValue | null
+  createdAt: Date
+  syncedAt: Date | null
+}
+
+function safeFilename(name: string): string {
+  const base = name.split(/[/\\]/).pop() || 'upload'
+  const cleaned = base.replace(/[^a-zA-Z0-9._-]+/g, '_').slice(0, 180)
+  return cleaned.length > 0 ? cleaned : 'upload'
+}
+
+function toDomain(row: PhotoRow): Photo {
+  const meta = row.metadata
+  return {
+    id: row.id,
+    clientId: row.clientId,
+    inspectionId: row.inspectionId,
+    deficiencyId: row.deficiencyId,
+    filename: row.filename,
+    mimeType: row.mimeType,
+    size: row.size,
+    storageKey: row.storageKey,
+    metadata:
+      typeof meta === 'object' && meta !== null && !Array.isArray(meta)
+        ? { ...(meta as Record<string, unknown>) }
+        : {},
+    annotations: row.annotations ?? null,
+    createdAt: row.createdAt,
+    syncedAt: row.syncedAt,
+  }
+}
+
+let defaultObjectStorage: ObjectStorageClient | undefined
+
+function getDefaultObjectStorage(): ObjectStorageClient {
+  if (!defaultObjectStorage) {
+    defaultObjectStorage = createObjectStorageClientFromEnv()
+  }
+  return defaultObjectStorage
+}
+
+export class PhotoService {
+  constructor(private readonly injectedStorage?: ObjectStorageClient) {}
+
+  private storage(): ObjectStorageClient {
+    return this.injectedStorage ?? getDefaultObjectStorage()
+  }
+
+  async upload(
+    file: File,
+    input: {
+      clientId: string
+      inspectionId: string
+      deficiencyId?: string
+      checklistItemId?: string
+      metadata: Record<string, unknown>
+      annotations?: string | null
+    },
+    userId: string,
+  ): Promise<{ photo: Photo; created: boolean }> {
+    const clientId = input.clientId?.trim()
+    if (!clientId) {
+      throw new Error('clientId is required')
+    }
+
+    const inspectionId = input.inspectionId?.trim()
+    if (!inspectionId) {
+      throw new Error('inspectionId is required')
+    }
+
+    const inspection = await inspectionService.getById(inspectionId, userId)
+    if (!inspection) {
+      throw new Error('Inspection not found')
+    }
+
+    const deficiencyId = input.deficiencyId?.trim()
+    if (deficiencyId) {
+      const def = await prisma.deficiency.findFirst({
+        where: { id: deficiencyId, inspectionId },
+      })
+      if (!def) {
+        throw new Error('Deficiency not found for inspection')
+      }
+    }
+
+    const existing = await prisma.photo.findUnique({ where: { clientId } })
+    if (existing) {
+      if (existing.inspectionId !== inspectionId) {
+        throw new Error('Photo clientId already exists for another inspection')
+      }
+      return { photo: toDomain(existing), created: false }
+    }
+
+    const body = Buffer.from(await file.arrayBuffer())
+    const mimeType = file.type?.trim() || 'application/octet-stream'
+    const storageKey = `${inspectionId}/${randomUUID()}-${safeFilename(file.name)}`
+
+    const metadata: Record<string, unknown> = { ...input.metadata }
+    if (input.checklistItemId?.trim()) {
+      metadata.checklistItemId = input.checklistItemId.trim()
+    }
+
+    const hasAnnotations =
+      input.annotations !== undefined && input.annotations !== null && input.annotations !== ''
+
+    await this.storage().putObject('photos', storageKey, body, mimeType)
+
+    const row = await prisma.photo.create({
+      data: {
+        clientId,
+        inspectionId,
+        ...(deficiencyId ? { deficiencyId } : {}),
+        filename: file.name || safeFilename(file.name),
+        mimeType,
+        size: body.byteLength,
+        storageKey,
+        metadata: metadata as Prisma.InputJsonValue,
+        ...(hasAnnotations ? { annotations: input.annotations as Prisma.InputJsonValue } : {}),
+        syncedAt: new Date(),
+      },
+    })
+
+    return { photo: toDomain(row), created: true }
+  }
+
+  /**
+   * Idempotent delete: resolves photo by server id, or by `clientId` query when the path id
+   * is still a client-local identifier. No-op when the photo does not exist.
+   */
+  async deleteByLookup(
+    pathId: string,
+    queryClientId: string | undefined,
+    userId: string,
+  ): Promise<void> {
+    const path = pathId?.trim()
+    if (!path) {
+      return
+    }
+
+    const qClient = queryClientId?.trim()
+
+    const photo =
+      (await prisma.photo.findUnique({ where: { id: path } })) ??
+      (qClient ? await prisma.photo.findUnique({ where: { clientId: qClient } }) : null)
+
+    if (!photo) {
+      return
+    }
+
+    const inspection = await inspectionService.getById(photo.inspectionId, userId)
+    if (!inspection) {
+      throw new Error('Inspection not found')
+    }
+
+    const key = photo.storageKey
+    if (key) {
+      await this.storage().deleteObject('photos', key)
+    }
+    await prisma.photo.delete({ where: { id: photo.id } })
+  }
+}
+
+export const photoService = new PhotoService()

@@ -1,0 +1,37 @@
+/**
+ * RGB triplets for Tailwind semantic colors (Guide §4.1 / §4.2).
+ * Used by packages/ui/tailwind.preset.js and apps that consume the preset.
+ */
+:root {
+  --color-bg-app: 248 250 252; /* slate-50 - App canvas */
+  --color-bg-surface: 255 255 255; /* white - Cards and panels */
+  --color-bg-elevated: 255 255 255; /* white - Modals and dropdowns */
+
+  --color-text-primary: 17 24 39; /* gray-900 - Primary text */
+  --color-text-secondary: 75 85 99; /* gray-600 - Secondary text */
+  --color-text-dim: 100 116 139; /* slate-500 - Tertiary text */
+
+  --color-border-subtle: 226 232 240; /* slate-200 - Default dividers */
+  --color-border-strong: 203 213 225; /* slate-300 - Emphasized borders */
+
+  --color-primary: 37 99 235; /* blue-600 - Primary actions */
+  --color-primary-hover: 29 78 216; /* blue-700 - Primary hover */
+  --color-primary-light: 219 234 254; /* blue-100 - Primary backgrounds */
+}
+
+.dark {
+  --color-bg-app: 15 23 42; /* slate-900 - App canvas */
+  --color-bg-surface: 30 41 59; /* slate-800 - Cards and panels */
+  --color-bg-elevated: 51 65 85; /* slate-700 - Modals and dropdowns */
+
+  --color-text-primary: 243 244 246; /* gray-100 - Primary text */
+  --color-text-secondary: 209 213 219; /* gray-300 - Secondary text */
+  --color-text-dim: 148 163 184; /* slate-400 - Tertiary text */
+
+  --color-border-subtle: 51 65 85; /* slate-700 - Default dividers */
+  --color-border-strong: 71 85 105; /* slate-600 - Emphasized borders */
+
+  --color-primary: 96 165 250; /* blue-400 - Primary actions */
+  --color-primary-hover: 59 130 246; /* blue-500 - Primary hover */
+  --color-primary-light: 30 58 138; /* blue-900 - Primary backgrounds */
+}

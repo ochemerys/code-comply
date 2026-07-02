@@ -1,0 +1,123 @@
+@import '../../../packages/ui/src/semantic-tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Global reset — mobile-first-design-guide.md §2.2 (semantic bg/text vs guide’s gray) */
+  html,
+  body {
+    @apply h-full w-full overflow-hidden antialiased;
+    @apply select-none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    scroll-padding-bottom: 20rem; /* Prevent keyboard overlap (mobile-first-design-guide §5.2) */
+    scroll-behavior: smooth; /* Smooth scrolling (Guide §9.4) */
+    overscroll-behavior-y: contain; /* Prevent bounce on iOS/Android (Guide §9.4) */
+  }
+
+  body {
+    background-color: rgb(var(--color-bg-app));
+    color: rgb(var(--color-text-primary));
+  }
+}
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-svg;
+  line-height: 1.5;
+  font-weight: 400;
+  font-size: 16px; /* Prevents iOS zoom on focus (mobile-first-design-guide §5.2) */
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  min-width: 320px;
+  min-height: 100dvh;
+}
+
+#app {
+  width: 100%;
+  min-height: 100dvh;
+}
+
+@supports not (height: 100dvh) {
+  body,
+  #app {
+    min-height: 100vh;
+  }
+}
+
+html[data-contrast='high'] {
+  --color-bg-app: 255 255 255;
+  --color-bg-surface: 255 255 255;
+  --color-bg-elevated: 255 255 255;
+  --color-text-primary: 0 0 0;
+  --color-text-secondary: 31 41 55;
+  --color-text-dim: 55 65 81;
+  --color-border-subtle: 0 0 0;
+  --color-border-strong: 0 0 0;
+  --color-primary: 30 64 175;
+  --color-primary-hover: 30 58 138;
+  --color-primary-light: 219 234 254;
+  --icon-stroke: 2.5px;
+}
+
+html.dark[data-contrast='high'] {
+  --color-bg-app: 0 0 0;
+  --color-bg-surface: 0 0 0;
+  --color-bg-elevated: 17 24 39;
+  --color-text-primary: 255 255 255;
+  --color-text-secondary: 255 255 255;
+  --color-text-dim: 229 231 235;
+  --color-border-subtle: 255 255 255;
+  --color-border-strong: 255 255 255;
+  --color-primary: 250 204 21;
+  --color-primary-hover: 253 224 71;
+  --color-primary-light: 63 63 70;
+}
+
+html[data-contrast='high'] body {
+  font-weight: 500;
+}
+
+html[data-contrast='high'] svg [stroke-width] {
+  stroke-width: var(--icon-stroke);
+}
+
+html[data-contrast='high'] .btn-primary {
+  background-color: #1e40af;
+  border: 2px solid #000;
+  color: #fff;
+  outline: 2px solid #000;
+  outline-offset: 2px;
+}
+
+html.dark[data-contrast='high'] .btn-primary {
+  background-color: #facc15;
+  border-color: #fff;
+  color: #000;
+  outline-color: #fff;
+}
+
+html[data-contrast='high'] .card,
+html[data-contrast='high'] .input,
+html[data-contrast='high'] input,
+html[data-contrast='high'] select,
+html[data-contrast='high'] textarea {
+  border-color: rgb(var(--color-border-strong));
+  outline: 2px solid rgb(var(--color-border-strong));
+  outline-offset: 2px;
+}
+
+html[data-contrast='high'] .card {
+  box-shadow: none;
+}

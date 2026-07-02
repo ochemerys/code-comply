@@ -1,0 +1,75 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+.turbo/
+
+# Development files
+.env*
+!.env.example
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation — exclude bulky doc trees; keep CI E2E artifact paths
+_docs/ai-generated-artifacts/
+_docs/codegen-history/
+_docs/development/
+_docs/prompts/
+_docs/requirements/
+_docs/user-manuals/
+*.md
+!README.md
+!_docs/user-guides/**
+!_docs/operations/**
+!_docs/api/**
+
+# Test results and logs
+test-results/
+*.log
+e2e-*.log
+
+# Docker files (not needed in container)
+# Keep Dockerfile.e2e and related files for build
+!Dockerfile.e2e
+!Dockerfile.e2e.start.sh
+!Dockerfile.e2e.supervisor.conf
+docker-compose*.yml
+.dockerignore
+
+# Development scripts and tools
+# Keep scripts directory for Docker build
+!scripts/
+setup.sh
+.qodo/
+
+# Package manager files
+# Keep pnpm-lock.yaml for Docker build
+!pnpm-lock.yaml
+yarn.lock
+package-lock.json
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Coverage reports
+coverage/
+
+# Temporary files
+tmp/
+temp/

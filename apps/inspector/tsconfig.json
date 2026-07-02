@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "strict": false,
+    "types": ["vitest/globals"]
+  },
+  "include": [
+    "env.d.ts",
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts",
+    "__tests__/**/*.ts"
+  ],
+  "exclude": ["node_modules", "dist"],
+  "references": [{ "path": "../api/tsconfig.build.json" }]
+}

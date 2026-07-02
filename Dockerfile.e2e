@@ -1,0 +1,109 @@
+# All-in-One E2E Test Container
+FROM node:20-bookworm-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    postgresql \
+    postgresql-contrib \
+    chromium \
+    wget \
+    curl \
+    ca-certificates \
+    fonts-liberation \
+    libnss3 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libcups2 \
+    libdrm2 \
+    libgbm1 \
+    libgtk-3-0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxrandr2 \
+    xdg-utils \
+    supervisor \
+    openssl \
+    libssl3 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Set up PostgreSQL
+RUN mkdir -p /var/lib/postgresql/data && \
+    chown -R postgres:postgres /var/lib/postgresql && \
+    mkdir -p /var/run/postgresql && \
+    chown -R postgres:postgres /var/run/postgresql
+
+# Initialize PostgreSQL
+USER postgres
+RUN /usr/lib/postgresql/*/bin/initdb -D /var/lib/postgresql/data
+
+# Switch back to root
+USER root
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files for dependency installation
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY turbo.json tsconfig.base.json ./
+
+# Copy all package.json files
+COPY packages/validators/package.json ./packages/validators/
+COPY packages/db/package.json ./packages/db/
+COPY packages/ui/package.json ./packages/ui/
+COPY packages/utils/package.json ./packages/utils/
+COPY packages/contracts/package.json ./packages/contracts/
+COPY packages/e2e-tests/package.json ./packages/e2e-tests/
+COPY apps/api/package.json ./apps/api/
+COPY apps/inspector/package.json ./apps/inspector/
+COPY apps/admin/package.json ./apps/admin/
+
+# Prisma schema is needed during pnpm install (postinstall)
+COPY packages/db/prisma ./packages/db/prisma
+
+# Install all dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy source code
+COPY packages ./packages
+COPY apps ./apps
+COPY scripts ./scripts
+COPY .github ./.github
+# Documentation artifacts for CI E2E validators (M11-S22–S24)
+COPY _docs/user-guides ./_docs/user-guides
+COPY _docs/operations ./_docs/operations
+COPY _docs/api ./_docs/api
+
+# Generate Prisma client
+RUN pnpm --filter @codecomply/db generate
+
+# Build all applications (include dev-only E2E routes for M7-S18 annotation scenarios)
+ENV VITE_ENABLE_E2E_ROUTES=true
+RUN pnpm build
+
+# Install Playwright browsers
+RUN pnpm --filter e2e-tests exec playwright install chromium webkit --with-deps
+
+# Create supervisor configuration
+COPY Dockerfile.e2e.supervisor.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Create startup script
+COPY Dockerfile.e2e.start.sh /start.sh
+RUN chmod +x /start.sh
+
+# Expose ports
+EXPOSE 4000 5175 5174 5432
+
+# Health check
+HEALTHCHECK --interval=10s --timeout=5s --start-period=60s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:4000/health || exit 1
+
+# Set environment variables
+ENV DATABASE_URL=postgresql://inspector:test_password@localhost:5432/inspections_test
+ENV NODE_ENV=test
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+
+# Start all services and run tests
+CMD ["/start.sh"]

@@ -1,0 +1,10 @@
+dist
+build
+node_modules
+.turbo
+coverage
+*.tsbuildinfo
+packages/db/node_modules/.prisma
+pnpm-lock.yaml
+_docs/ai-generated-artifacts/**/coverage-final.json
+_docs/ai-generated-artifacts/**/*-coverage-final.json

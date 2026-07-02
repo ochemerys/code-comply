@@ -1,0 +1,28 @@
+services:
+  e2e-tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.e2e
+    # Host-side ports avoid clashes with local API (4000) / Vite dev servers on typical setups.
+    ports:
+      - "4010:4000"   # API (container listens on 4000)
+      - "8175:5175"   # Inspector PWA
+      - "8174:5174"   # Admin Portal
+    environment:
+      - NODE_ENV=test
+      - DATABASE_URL=postgresql://inspector:test_password@localhost:5432/inspections_test
+      - KEEP_RUNNING=${KEEP_RUNNING:-false}
+      - TEST_TAGS=${TEST_TAGS}
+      # Relax rate limits for full M11 E2E batches (many login steps share one IP)
+      - RATE_LIMIT_LOGIN_MAX=1000
+      - RATE_LIMIT_API_MAX=10000
+      - RATE_LIMIT_UPLOAD_MAX=1000
+    volumes:
+      # Mount test results directory
+      - ./test-results:/test-results
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 60s

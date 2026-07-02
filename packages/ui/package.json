@@ -1,0 +1,44 @@
+{
+  "name": "@codecomply/ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./style.css": "./dist/style.css",
+    "./tailwind-preset": "./tailwind.preset.js"
+  },
+  "scripts": {
+    "build": "vite build && tsc -b --force",
+    "dev": "vite build --watch",
+    "clean": "rm -rf dist",
+    "typecheck": "vue-tsc --noEmit",
+    "test": "vitest run",
+    "test:unit": "vitest run",
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src --ext .ts,.vue",
+    "lint:fix": "eslint src --ext .ts,.vue --fix"
+  },
+  "dependencies": {
+    "vue": "^3.3.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.11",
+    "@vitejs/plugin-vue": "^4.4.0",
+    "@vue/test-utils": "^2.4.1",
+    "autoprefixer": "^10.4.16",
+    "jsdom": "^23.0.1",
+    "postcss": "^8.4.31",
+    "tailwind-scrollbar-hide": "^4.0.0",
+    "tailwindcss": "^3.3.5",
+    "vite": "^5.0.0",
+    "vitest": "^1.0.4",
+    "vue-tsc": "^3.2.4"
+  }
+}

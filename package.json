@@ -1,0 +1,61 @@
+{
+  "name": "codecomply-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CodeComply - open source inspection management monorepo",
+  "scripts": {
+    "setup": "./setup.sh",
+    "dev": "turbo run dev",
+    "dev:all": "turbo run dev --filter=@codecomply/api --filter=@codecomply/inspector --filter=@codecomply/admin",
+    "dev:inspector-stack": "turbo run dev --filter=@codecomply/api --filter=@codecomply/inspector",
+    "build": "turbo run build",
+    "build:inspector": "turbo run build --filter=@codecomply/ui --filter=@codecomply/inspector",
+    "build:admin": "turbo run build --filter=@codecomply/ui --filter=@codecomply/admin",
+    "build:api": "turbo run build --filter=@codecomply/api",
+    "test": "turbo run test --concurrency=1 -- --run",
+    "test:unit": "turbo run test:unit",
+    "test:integration": "turbo run test:integration --concurrency=1",
+    "test:e2e": "mkdir -p test-results && bash -lc 'set -o pipefail; docker compose -f docker-compose.e2e.yml up --build --abort-on-container-exit 2>&1 | tee test-results/e2e-$(date +%Y%m%d-%H%M%S).log'",
+    "test:e2e:quick": "mkdir -p test-results && bash -lc 'set -o pipefail; docker compose -f docker-compose.e2e.yml up --build --abort-on-container-exit 2>&1 | tee test-results/e2e-$(date +%Y%m%d-%H%M%S).log'",
+    "test:e2e:debug": "mkdir -p test-results && bash -lc 'set -o pipefail; KEEP_RUNNING=true docker compose -f docker-compose.e2e.yml up --build 2>&1 | tee test-results/e2e-debug-$(date +%Y%m%d-%H%M%S).log'",
+    "test:e2e:auth": "mkdir -p test-results && bash -lc 'set -o pipefail; TEST_TAGS=\"@auth\" docker compose -f docker-compose.e2e.yml up --build --abort-on-container-exit 2>&1 | tee test-results/e2e-auth-$(date +%Y%m%d-%H%M%S).log'",
+    "test:watch": "turbo run test:unit -- --watch",
+    "test:coverage": "turbo run test:unit --concurrency=1 -- --coverage",
+    "lint": "turbo run lint",
+    "lint:semantic-colors": "turbo run lint:semantic-colors",
+    "lint:fix": "turbo run lint:fix",
+    "format": "prettier --write \"**/*.{ts,tsx,vue,json,md,css}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,vue,json,md,css}\"",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "typecheck": "turbo run typecheck",
+    "db:generate": "turbo run db:generate --filter=@codecomply/db",
+    "db:push": "turbo run db:push --filter=@codecomply/db",
+    "db:migrate": "turbo run db:migrate --filter=@codecomply/db",
+    "db:seed": "turbo run db:seed --filter=@codecomply/db",
+    "db:studio": "cd packages/db && pnpm db:studio",
+    "inspector:dev": "turbo run dev --filter=@codecomply/inspector",
+    "admin:dev": "turbo run dev --filter=@codecomply/admin",
+    "api:dev": "turbo run dev --filter=@codecomply/api"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.53.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-vue": "^9.18.1",
+    "prettier": "^3.1.0",
+    "turbo": "^1.10.16",
+    "typescript": "^5.4.5",
+    "@vitest/coverage-v8": "^1.0.4"
+  },
+  "engines": {
+    "node": ">=20.0.0 <21",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "pnpm": {
+    "overrides": {
+      "isomorphic-dompurify>jsdom": "23.2.0"
+    }
+  }
+}
