@@ -1,6 +1,6 @@
 /**
  * M11-S20 — Production monitoring, logging, and alerting acceptance criteria and validators.
- * See scripts/monitoring-audit.mjs and _docs/development/03-implementation/m11-s20-monitoring-checklist.md.
+ * See scripts/monitoring-audit.mjs and _docs/internal/development/03-implementation/m11-s20-monitoring-checklist.md.
  */
 
 export const MONITORING_STORY_ID = 'M11-S20'
@@ -44,7 +44,7 @@ export const MONITORING_ARTIFACT_PATHS = {
   integrationSpec: 'packages/utils/__tests__/integration/monitoring-scenarios.integration.spec.ts',
   e2eFeature: 'packages/e2e-tests/features/ci/monitoring.feature',
   e2eSteps: 'packages/e2e-tests/step-definitions/ci/monitoring.steps.ts',
-  checklist: '_docs/development/03-implementation/m11-s20-monitoring-checklist.md',
+  checklist: '_docs/internal/development/03-implementation/m11-s20-monitoring-checklist.md',
   healthRoute: 'apps/api/src/routes/health.ts',
 } as const
 

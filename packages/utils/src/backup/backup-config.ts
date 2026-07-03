@@ -1,6 +1,6 @@
 /**
  * M11-S21 — Geo-redundant database backup acceptance criteria and validators.
- * See scripts/backup-audit.mjs and _docs/development/03-implementation/m11-s21-geo-redundant-backups-checklist.md.
+ * See scripts/backup-audit.mjs and _docs/internal/development/03-implementation/m11-s21-geo-redundant-backups-checklist.md.
  */
 
 export const BACKUP_STORY_ID = 'M11-S21'
@@ -32,7 +32,8 @@ export const BACKUP_ARTIFACT_PATHS = {
   backupScript: 'scripts/backup-database.mjs',
   restoreScript: 'scripts/restore-database.mjs',
   backupWorkflow: '.github/workflows/database-backup.yml',
-  checklist: '_docs/development/03-implementation/m11-s21-geo-redundant-backups-checklist.md',
+  checklist:
+    '_docs/internal/development/03-implementation/m11-s21-geo-redundant-backups-checklist.md',
   e2eFeature: 'packages/e2e-tests/features/ci/backups.feature',
   e2eSteps: 'packages/e2e-tests/step-definitions/ci/backups.steps.ts',
 } as const

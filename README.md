@@ -1,5 +1,18 @@
 # CodeComply
 
+[![CI](https://github.com/ochemerys/code-comply/actions/workflows/public-ci.yml/badge.svg)](https://github.com/ochemerys/code-comply/actions/workflows/public-ci.yml)
+[![License: MIT](https://img.shields.io/github/license/ochemerys/code-comply)](LICENSE)
+![Node](https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white)
+![pnpm](https://img.shields.io/badge/pnpm-%3E%3D9-F69220?logo=pnpm&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![Vue 3](https://img.shields.io/badge/Vue-3-4FC08D?logo=vuedotjs&logoColor=white)
+![Hono](https://img.shields.io/badge/API-Hono-E36002?logo=hono&logoColor=white)
+![Prisma](https://img.shields.io/badge/ORM-Prisma-2D3748?logo=prisma&logoColor=white)
+![Turborepo](https://img.shields.io/badge/monorepo-Turborepo-EF4444?logo=turborepo&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-06B6D4?logo=tailwindcss&logoColor=white)
+![Prettier](https://img.shields.io/badge/code%20style-Prettier-F7B93E?logo=prettier&logoColor=black)
+![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)
+
 **CodeComply** — open source inspection management for agencies operating under Alberta's Safety Codes Act. A monorepo for safety codes inspection management with offline-first PWA capabilities.
 
 > CodeComply is an open source inspection management system designed and developed to
@@ -236,9 +249,9 @@ open test-results/cucumber-report.html
 
 Deploy the full stack to [Render](https://render.com): **PostgreSQL**, **API** (Web Service), **Inspector PWA** and **Admin** (Static Sites). The Inspector static site alone cannot authenticate users without the API and database.
 
-**Canonical guide:** [`_docs/internal/development/02-initial-setup/render-deployment-checklist.md`](_docs/internal/development/02-initial-setup/render-deployment-checklist.md) — setup order, env vars, migrations, seed data, login troubleshooting, SSO notes.
+**Canonical guide:** [`#staging-deployment-rendercom`](#staging-deployment-rendercom) — setup order, env vars, migrations, seed data, login troubleshooting, SSO notes.
 
-Staging maps to the `develop` branch. CI/CD and branch mapping: [`_docs/internal/development/01-governance/ci-cd-guide.md`](_docs/internal/development/01-governance/ci-cd-guide.md).
+Staging maps to the `develop` branch. CI/CD and branch mapping: [`.github/workflows/public-ci.yml`](.github/workflows/public-ci.yml).
 
 ### Prerequisites
 
@@ -308,7 +321,7 @@ For staging demos, seed development users and sample data once:
 DATABASE_URL="postgresql://…" pnpm db:seed
 ```
 
-See the [Render checklist](_docs/internal/development/02-initial-setup/render-deployment-checklist.md#database-migrations-and-seed-data) for Shell/pre-deploy options.
+See the [Render checklist](#staging-deployment-rendercom) for Shell/pre-deploy options.
 
 **Sign-in after deploy (seeded staging):**
 

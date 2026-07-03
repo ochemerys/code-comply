@@ -2,6 +2,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { runComplianceTests } from '../test/compliance-profile'
 import {
   ACCEPTANCE_CRITERIA,
   ADMIN_SCREENSHOT_PATHS,
@@ -43,10 +44,15 @@ describe('user-guides-config (M11-S23)', () => {
   it('validates inspector and admin guide markers', () => {
     const inspector = readRepoFile(USER_GUIDES_ARTIFACT_PATHS.inspectorGuide)
     const admin = readRepoFile(USER_GUIDES_ARTIFACT_PATHS.adminGuide)
-    const checklist = readRepoFile(USER_GUIDES_ARTIFACT_PATHS.checklist)
     expect(validateInspectorGuide(inspector).missingMarkers).toEqual([])
     expect(validateAdminGuide(admin).missingMarkers).toEqual([])
-    expect(validateChecklist(checklist).missingMarkers).toEqual([])
+  })
+
+  describe.runIf(runComplianceTests)('internal repository artifacts', () => {
+    it('validates implementation checklist markers', () => {
+      const checklist = readRepoFile(USER_GUIDES_ARTIFACT_PATHS.checklist)
+      expect(validateChecklist(checklist).missingMarkers).toEqual([])
+    })
   })
 
   it('validates step-by-step instructions and screenshot references', () => {

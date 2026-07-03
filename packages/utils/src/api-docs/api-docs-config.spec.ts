@@ -2,6 +2,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { runComplianceTests } from '../test/compliance-profile'
 import {
   ACCEPTANCE_CRITERIA,
   API_DOCS_ARTIFACT_PATHS,
@@ -35,11 +36,16 @@ describe('api-docs-config (M11-S22)', () => {
     expect(ACCEPTANCE_CRITERIA).toHaveLength(5)
   })
 
-  it('validates API README and checklist markers', () => {
+  it('validates API README markers', () => {
     const readme = readRepoFile(API_DOCS_ARTIFACT_PATHS.apiReadme)
-    const checklist = readRepoFile(API_DOCS_ARTIFACT_PATHS.checklist)
     expect(validateReadme(readme).missingMarkers).toEqual([])
-    expect(validateChecklist(checklist).missingMarkers).toEqual([])
+  })
+
+  describe.runIf(runComplianceTests)('internal repository artifacts', () => {
+    it('validates implementation checklist markers', () => {
+      const checklist = readRepoFile(API_DOCS_ARTIFACT_PATHS.checklist)
+      expect(validateChecklist(checklist).missingMarkers).toEqual([])
+    })
   })
 
   it('validates exported openapi.yaml markers when present', () => {

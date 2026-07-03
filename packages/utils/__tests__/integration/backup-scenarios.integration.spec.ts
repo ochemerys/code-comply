@@ -5,6 +5,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { runComplianceTests } from '../../src/test/compliance-profile'
 import {
   ACCEPTANCE_CRITERIA,
   BACKUP_ARTIFACT_PATHS,
@@ -21,7 +22,7 @@ const SAMPLE_DUMP = `-- PostgreSQL database dump
 CREATE TABLE "Permit" (id text PRIMARY KEY);
 `
 
-describe('Backup scenarios integration (M11-S21)', () => {
+describe.runIf(runComplianceTests)('Backup scenarios integration (M11-S21)', () => {
   it('maps acceptance criteria to backup artifacts on disk', () => {
     for (const rel of Object.values(BACKUP_ARTIFACT_PATHS)) {
       expect(existsSync(join(ROOT, rel)), rel).toBe(true)

@@ -31,6 +31,9 @@
     "test:unit": {
       "outputs": ["coverage/**"]
     },
+    "test:compliance": {
+      "outputs": ["coverage/**"]
+    },
     "test:integration": {
       "dependsOn": ["build"],
       "outputs": ["coverage/**"]

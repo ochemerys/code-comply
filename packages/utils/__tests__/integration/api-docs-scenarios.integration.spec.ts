@@ -5,6 +5,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { runComplianceTests } from '../../src/test/compliance-profile'
 import {
   ACCEPTANCE_CRITERIA,
   API_DOCS_ARTIFACT_PATHS,
@@ -15,7 +16,7 @@ import {
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../../..')
 
-describe('API documentation scenarios integration (M11-S22)', () => {
+describe.runIf(runComplianceTests)('API documentation scenarios integration (M11-S22)', () => {
   it('maps acceptance criteria to API docs artifacts on disk', () => {
     for (const rel of Object.values(API_DOCS_ARTIFACT_PATHS)) {
       if (rel === API_DOCS_ARTIFACT_PATHS.openapiYaml) continue

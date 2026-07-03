@@ -5,6 +5,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { runComplianceTests } from '../../src/test/compliance-profile'
 import {
   ACCEPTANCE_CRITERIA,
   PIPELINE_STAGES,
@@ -16,7 +17,7 @@ import {
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../../..')
 
-describe('CI/CD pipeline scenarios integration (M11-S19)', () => {
+describe.runIf(runComplianceTests)('CI/CD pipeline scenarios integration (M11-S19)', () => {
   it('maps acceptance criteria to on-disk workflow artifacts', () => {
     for (const rel of Object.values(WORKFLOW_PATHS)) {
       expect(existsSync(join(ROOT, rel)), rel).toBe(true)

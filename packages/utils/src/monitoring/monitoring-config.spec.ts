@@ -2,6 +2,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { runComplianceTests } from '../test/compliance-profile'
 import {
   ACCEPTANCE_CRITERIA,
   ALERT_THRESHOLDS,
@@ -50,9 +51,11 @@ describe('monitoring-config (M11-S20)', () => {
     expect(result.ok).toBe(true)
   })
 
-  it('validates monitoring checklist documents ops setup', () => {
-    const checklist = readRepoFile(MONITORING_ARTIFACT_PATHS.checklist)
-    const result = validateMonitoringChecklist(checklist)
-    expect(result.missingMarkers, result.missingMarkers.join(', ')).toEqual([])
+  describe.runIf(runComplianceTests)('internal repository artifacts', () => {
+    it('validates monitoring checklist documents ops setup', () => {
+      const checklist = readRepoFile(MONITORING_ARTIFACT_PATHS.checklist)
+      const result = validateMonitoringChecklist(checklist)
+      expect(result.missingMarkers, result.missingMarkers.join(', ')).toEqual([])
+    })
   })
 })

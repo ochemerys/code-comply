@@ -37,7 +37,7 @@ VITE_VAPID_PUBLIC_KEY=<public-key-from-web-push-generate-vapid-keys>
 
 The Inspector is a **static site** on Render. It must be built with `VITE_API_URL` pointing at your deployed API (HTTPS, no trailing slash). The API must list the Inspector origin in `INSPECTOR_URL` for CORS.
 
-Full instructions: [`_docs/render-deployment-checklist.md`](../../_docs/render-deployment-checklist.md).
+Full instructions: see [Staging deployment (Render.com)](../../README.md#staging-deployment-rendercom) in the root README.
 
 After seeding the staging database, sign in with **`inspector1@example.com` / `password123`** (SCO). Admin accounts (`admin@example.com`) are for the Admin portal only.
 

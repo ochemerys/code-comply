@@ -76,7 +76,7 @@ of the deploying organization. Security and privacy outcomes are
 - [`REGULATORY.md`](REGULATORY.md) — regulatory alignment and compliance mapping.
 - [`_docs/internal/operations/runbook.md`](_docs/internal/operations/runbook.md) — operations and monitoring.
 - [`_docs/internal/operations/incident-response.md`](_docs/internal/operations/incident-response.md) — incident handling.
-- [`_docs/internal/development/02-initial-setup/render-deployment-checklist.md`](_docs/internal/development/02-initial-setup/render-deployment-checklist.md) — deployment configuration, including Canadian-region hosting guidance for FOIP alignment.
+- [Staging deployment (Render.com)](README.md#staging-deployment-rendercom) — deployment configuration, including Canadian-region hosting guidance for FOIP alignment.
 
 ## No Warranty
 

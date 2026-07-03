@@ -172,7 +172,7 @@ The API can be deployed to any Node.js hosting platform:
 - AWS Lambda (with adapter)
 - Vercel (with adapter)
 
-See the main [CI/CD Guide](../../_docs/internal/development/01-governance/ci-cd-guide.md) for deployment instructions.
+See the [public CI workflow](../../.github/workflows/public-ci.yml) for deployment instructions.
 
 ## License
 

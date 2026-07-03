@@ -5,6 +5,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { runComplianceTests } from '../../src/test/compliance-profile'
 import {
   ACCEPTANCE_CRITERIA,
   MONITORING_ARTIFACT_PATHS,
@@ -15,7 +16,7 @@ import {
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../../..')
 
-describe('Monitoring scenarios integration (M11-S20)', () => {
+describe.runIf(runComplianceTests)('Monitoring scenarios integration (M11-S20)', () => {
   it('maps acceptance criteria to monitoring artifacts on disk', () => {
     for (const rel of Object.values(MONITORING_ARTIFACT_PATHS)) {
       expect(existsSync(join(ROOT, rel)), rel).toBe(true)

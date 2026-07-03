@@ -1,6 +1,6 @@
 /**
  * M11-S23 — Create user guides acceptance criteria and validators.
- * See scripts/user-guides-audit.mjs and _docs/development/03-implementation/m11-s23-user-guides-checklist.md.
+ * See scripts/user-guides-audit.mjs and _docs/internal/development/03-implementation/m11-s23-user-guides-checklist.md.
  */
 
 export const USER_GUIDES_STORY_ID = 'M11-S23'
@@ -33,7 +33,7 @@ export const USER_GUIDES_ARTIFACT_PATHS = {
   userGuidesConfigSpec: 'packages/utils/src/user-guides/user-guides-config.spec.ts',
   integrationSpec: 'packages/utils/__tests__/integration/user-guides-scenarios.integration.spec.ts',
   auditScript: 'scripts/user-guides-audit.mjs',
-  checklist: '_docs/development/03-implementation/m11-s23-user-guides-checklist.md',
+  checklist: '_docs/internal/development/03-implementation/m11-s23-user-guides-checklist.md',
   e2eFeature: 'packages/e2e-tests/features/ci/user-guides.feature',
   e2eSteps: 'packages/e2e-tests/step-definitions/ci/user-guides.steps.ts',
 } as const

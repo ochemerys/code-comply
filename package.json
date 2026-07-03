@@ -14,6 +14,7 @@
     "build:api": "turbo run build --filter=@codecomply/api",
     "test": "turbo run test --concurrency=1 -- --run",
     "test:unit": "turbo run test:unit",
+    "test:compliance": "turbo run test:compliance",
     "test:integration": "turbo run test:integration --concurrency=1",
     "test:e2e": "mkdir -p test-results && bash -lc 'set -o pipefail; docker compose -f docker-compose.e2e.yml up --build --abort-on-container-exit 2>&1 | tee test-results/e2e-$(date +%Y%m%d-%H%M%S).log'",
     "test:e2e:quick": "mkdir -p test-results && bash -lc 'set -o pipefail; docker compose -f docker-compose.e2e.yml up --build --abort-on-container-exit 2>&1 | tee test-results/e2e-$(date +%Y%m%d-%H%M%S).log'",

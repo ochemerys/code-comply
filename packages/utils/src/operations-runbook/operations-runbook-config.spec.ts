@@ -2,6 +2,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { runComplianceTests } from '../test/compliance-profile'
 import {
   ACCEPTANCE_CRITERIA,
   OPERATIONS_RUNBOOK_ARTIFACT_PATHS,
@@ -36,13 +37,15 @@ describe('operations-runbook-config (M11-S24)', () => {
     expect(ACCEPTANCE_CRITERIA).toHaveLength(5)
   })
 
-  it('validates runbook, incident response, and checklist markers', () => {
-    const runbook = readRepoFile(OPERATIONS_RUNBOOK_ARTIFACT_PATHS.runbook)
-    const incident = readRepoFile(OPERATIONS_RUNBOOK_ARTIFACT_PATHS.incidentResponse)
-    const checklist = readRepoFile(OPERATIONS_RUNBOOK_ARTIFACT_PATHS.checklist)
-    expect(validateRunbook(runbook).missingMarkers).toEqual([])
-    expect(validateRunbookSections(runbook).missingMarkers).toEqual([])
-    expect(validateIncidentResponse(incident).missingMarkers).toEqual([])
-    expect(validateChecklist(checklist).missingMarkers).toEqual([])
+  describe.runIf(runComplianceTests)('repository artifacts', () => {
+    it('validates runbook, incident response, and checklist markers', () => {
+      const runbook = readRepoFile(OPERATIONS_RUNBOOK_ARTIFACT_PATHS.runbook)
+      const incident = readRepoFile(OPERATIONS_RUNBOOK_ARTIFACT_PATHS.incidentResponse)
+      const checklist = readRepoFile(OPERATIONS_RUNBOOK_ARTIFACT_PATHS.checklist)
+      expect(validateRunbook(runbook).missingMarkers).toEqual([])
+      expect(validateRunbookSections(runbook).missingMarkers).toEqual([])
+      expect(validateIncidentResponse(incident).missingMarkers).toEqual([])
+      expect(validateChecklist(checklist).missingMarkers).toEqual([])
+    })
   })
 })

@@ -1,6 +1,6 @@
 /**
  * M11-S22 — Complete API documentation acceptance criteria and validators.
- * See scripts/openapi-audit.mjs and _docs/development/03-implementation/m11-s22-api-documentation-checklist.md.
+ * See scripts/openapi-audit.mjs and _docs/internal/development/03-implementation/m11-s22-api-documentation-checklist.md.
  */
 
 export const API_DOCS_STORY_ID = 'M11-S22'
@@ -41,7 +41,7 @@ export const API_DOCS_ARTIFACT_PATHS = {
   integrationSpec: 'packages/utils/__tests__/integration/api-docs-scenarios.integration.spec.ts',
   exportScript: 'scripts/export-openapi.mjs',
   auditScript: 'scripts/openapi-audit.mjs',
-  checklist: '_docs/development/03-implementation/m11-s22-api-documentation-checklist.md',
+  checklist: '_docs/internal/development/03-implementation/m11-s22-api-documentation-checklist.md',
   e2eFeature: 'packages/e2e-tests/features/ci/api-documentation.feature',
   e2eSteps: 'packages/e2e-tests/step-definitions/ci/api-documentation.steps.ts',
 } as const

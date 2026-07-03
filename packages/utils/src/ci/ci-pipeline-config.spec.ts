@@ -2,6 +2,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { runComplianceTests } from '../test/compliance-profile'
 import {
   ACCEPTANCE_CRITERIA,
   CI_PIPELINE_STORY_ID,
@@ -36,18 +37,20 @@ describe('ci-pipeline-config (M11-S19)', () => {
     expect(coversAllPipelineStages(['lint'])).toBe(false)
   })
 
-  it('validates ci.yml contains every pipeline stage job', () => {
-    const ci = readRepoFile(WORKFLOW_PATHS.ci)
-    const result = validateCiWorkflow(ci)
-    expect(result.missingStages, result.missingStages.join(', ')).toEqual([])
-    expect(result.missingTriggers, result.missingTriggers.join(', ')).toEqual([])
-  })
+  describe.runIf(runComplianceTests)('repository artifacts', () => {
+    it('validates ci.yml contains every pipeline stage job', () => {
+      const ci = readRepoFile(WORKFLOW_PATHS.ci)
+      const result = validateCiWorkflow(ci)
+      expect(result.missingStages, result.missingStages.join(', ')).toEqual([])
+      expect(result.missingTriggers, result.missingTriggers.join(', ')).toEqual([])
+    })
 
-  it('validates manual deploy / rollback workflows', () => {
-    const staging = readRepoFile(WORKFLOW_PATHS.deployStaging)
-    const production = readRepoFile(WORKFLOW_PATHS.deployProduction)
-    expect(validateDeployWorkflow(staging, 'staging').ok).toBe(true)
-    expect(validateDeployWorkflow(production, 'production').ok).toBe(true)
-    expect(validateRollbackSupport(staging, production)).toBe(true)
+    it('validates manual deploy / rollback workflows', () => {
+      const staging = readRepoFile(WORKFLOW_PATHS.deployStaging)
+      const production = readRepoFile(WORKFLOW_PATHS.deployProduction)
+      expect(validateDeployWorkflow(staging, 'staging').ok).toBe(true)
+      expect(validateDeployWorkflow(production, 'production').ok).toBe(true)
+      expect(validateRollbackSupport(staging, production)).toBe(true)
+    })
   })
 })
