@@ -1,0 +1,56 @@
+name: Question / Clarification
+description: Ask how Code Comply works — workflows, checklists, roles, or configuration
+title: "[Question] "
+labels: ["type:question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form when you need a **clarification or how-to answer**. The maintainer (and automated triage) will try to answer from public docs and code.
+
+        If something is broken, use **Bug Report**. If you want new behavior or content, use an improvement template.
+  - type: dropdown
+    id: topic-area
+    attributes:
+      label: Topic area
+      options:
+        - Inspector / field workflow
+        - Checklists & inspection stages
+        - Code library / references
+        - Admin / organization setup
+        - Accounts, roles, or permissions
+        - Sync, offline, or device behavior
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+      description: Ask one clear question. Include what you already tried.
+      placeholder: |
+        When creating a multi-unit inspection, how do I…
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: What you expected, where you looked (docs, screens), and any constraints (jurisdiction, role).
+    validations:
+      required: false
+  - type: input
+    id: app-version
+    attributes:
+      label: App / environment (if known)
+      description: "e.g. web, PWA, version, browser"
+      placeholder: PWA 1.x — Chrome Android
+    validations:
+      required: false
+  - type: checkboxes
+    id: searched
+    attributes:
+      label: Before submitting
+      options:
+        - label: I checked the README / docs and existing issues for an answer.
+          required: true

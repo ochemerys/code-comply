@@ -1,0 +1,66 @@
+name: Product / Feature Improvement
+description: Suggest a product, UX, or workflow change (not checklist/code-library content)
+title: "[Improvement] "
+labels: ["type:improvement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for **product or UX changes** (navigation, sync behavior, admin tools, accessibility, performance).
+
+        For new **checklist / code-library content**, use **Checklist / Code Library Request** instead.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Product area
+      options:
+        - Inspector / field workflow
+        - Admin / organization management
+        - Checklists UX (not new code content)
+        - Code library UX (not new entries)
+        - Sync / offline / devices
+        - Reporting / exports
+        - Accessibility / usability
+        - Performance
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or opportunity
+      description: What friction exists today for SCOs, admins, or other users?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: What should the product do differently?
+    validations:
+      required: true
+  - type: textarea
+    id: scenario
+    attributes:
+      label: Who benefits, and when?
+      description: Role (SCO, admin, …), situation, and how success would be measured in the field or office.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered (optional)
+      description: Workarounds you use today, or other approaches that might work.
+    validations:
+      required: false
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Expected impact
+      options:
+        - Convenience / polish
+        - Saves meaningful time per inspection
+        - Unblocks a common workflow
+        - Required for adoption in my organization
+    validations:
+      required: true

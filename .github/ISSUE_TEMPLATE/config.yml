@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/ochemerys/code-comply/security/advisories/new
+    about: Report a security issue privately. Do not open a public issue with exploit details, credentials, or personal data.
+  - name: Code Comply documentation
+    url: https://github.com/ochemerys/code-comply#readme
+    about: Check the README and docs before opening a question — your answer may already be there.

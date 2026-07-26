@@ -1,0 +1,55 @@
+name: Documentation Gap
+description: Missing, unclear, or incorrect public documentation
+title: "[Docs] "
+labels: ["type:improvement", "docs"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form when **public docs** (README, guides, in-app help copy that is documented publicly) are missing, outdated, or confusing.
+
+        For product behavior changes, use **Product / Feature Improvement**. For safety-code content, use **Checklist / Code Library Request**.
+  - type: dropdown
+    id: docs-kind
+    attributes:
+      label: Documentation type
+      options:
+        - Getting started / setup
+        - Inspector workflow
+        - Admin / organization setup
+        - Checklists & code library usage
+        - API / integration (public)
+        - Troubleshooting
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: Where did you look?
+      description: File path, README section, URL, or in-app help screen name.
+      placeholder: README → "Inspections" or docs/…
+    validations:
+      required: true
+  - type: textarea
+    id: gap
+    attributes:
+      label: What is missing or wrong?
+      description: Quote the confusing text if helpful, and describe what a reader still cannot do.
+    validations:
+      required: true
+  - type: textarea
+    id: suggested-fix
+    attributes:
+      label: Suggested fix (optional)
+      description: Outline or draft wording that would have unblocked you.
+    validations:
+      required: false
+  - type: textarea
+    id: audience
+    attributes:
+      label: Audience
+      description: Who needs this clarified (new SCO, AHJ admin, integrator, …)?
+      placeholder: New SCO onboarding onto field inspections
+    validations:
+      required: false

@@ -1,0 +1,104 @@
+name: Checklist / Code Library Request
+description: Suggest a checklist template, inspection stage, or code-library entry for Safety Code Officers
+title: "[Checklist] "
+labels: ["type:improvement", "checklist-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for **safety-code content**: checklist templates, inspection stages, Pass/Fail items, or code-library references SCOs need in the field.
+
+        For app bugs or product UX changes, use **Bug Report** or **Product / Feature Improvement** instead.
+  - type: dropdown
+    id: request-kind
+    attributes:
+      label: Request kind
+      description: What kind of content change is this?
+      options:
+        - New checklist template
+        - New inspection stage / section
+        - New Pass/Fail item(s)
+        - New or updated code-library entry
+        - Change to existing checklist / stage / item
+        - Other content request
+    validations:
+      required: true
+  - type: dropdown
+    id: code-discipline
+    attributes:
+      label: Safety code discipline
+      options:
+        - Building
+        - Fire
+        - Electrical
+        - Gas
+        - Plumbing
+        - Elevators & Amusement Rides
+        - Pressure Equipment
+        - Other / cross-discipline
+    validations:
+      required: true
+  - type: input
+    id: jurisdiction
+    attributes:
+      label: Jurisdiction / code edition
+      description: "e.g. Alberta, NBC 2020, NFC 2020, provincial amendment, AHJ-specific practice"
+      placeholder: Alberta — NBC 2020 with provincial amendments
+    validations:
+      required: true
+  - type: textarea
+    id: request-description
+    attributes:
+      label: What should be added or changed?
+      description: Template sections, Pass/Fail items, code references, or library metadata SCOs need in the field.
+      placeholder: |
+        Add a rough-in electrical stage section covering…
+        Pass/Fail items should reference…
+    validations:
+      required: true
+  - type: textarea
+    id: real-world-scenario
+    attributes:
+      label: Real-world inspection scenario
+      description: Describe when an SCO would use this (permit type, stage of work, what they are verifying on site).
+      placeholder: |
+        During a residential electrical rough-in inspection, before insulation…
+    validations:
+      required: true
+  - type: textarea
+    id: related-existing
+    attributes:
+      label: Related existing checklist, stage, or library entry
+      description: Names, paths, or links if you know them. Leave blank if this is net-new.
+      placeholder: "e.g. Building → Residential → Framing (existing stage X)"
+    validations:
+      required: false
+  - type: textarea
+    id: suggested-wording
+    attributes:
+      label: Suggested Pass/Fail or library wording (optional)
+      description: Draft text helps reviewers accept field-ready language faster.
+      placeholder: |
+        Pass — Conductors are secured within 300 mm of the box…
+        Fail — …
+    validations:
+      required: false
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Field urgency
+      description: How soon do SCOs need this in the product?
+      options:
+        - Nice to have
+        - Useful this season
+        - Blocking current inspections
+      default: 0
+    validations:
+      required: true
+  - type: checkboxes
+    id: acknowledgements
+    attributes:
+      label: Acknowledgements
+      options:
+        - label: This request does not include copyrighted code text I am not allowed to reproduce, private AHJ forms, or personal/client data.
+          required: true
